@@ -4,11 +4,13 @@ const S=root.AgendaSchema||(typeof require==='function'?require('./schema.js'):n
 function blank(table){return Object.fromEntries(S.definitions[table].map(f=>[f.key,f.type==='select'?(f.options[0]||''):'']));}
 function fresh(){const data={schema:S.version,id:uuid(),updatedAt:new Date().toISOString()};for(const t of Object.keys(S.definitions)) data[t]=[];data.Metadata=[{...blank('Metadata'),school:'',planningPeriod:'Term 4 2026',region:'South Africa',currency:'ZAR'}];data.PromptAnswers=S.prompts.map(p=>({...p,answer:''}));data.Sections=S.sections.map(s=>({...blank('Sections'),sectionId:s.id}));return data;}
 function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==='x'?r:(r&3|8)).toString(16);});}
-function school(d){return d.Metadata[0].school;}
-function key(d){return [school(d),d.Metadata[0].planningPeriod,d.Metadata[0].meetingPeriod].map(x=>x.trim().toLowerCase().replace(/\s+/g,' ')).join('|');}
+function canonicalSchool(name){return typeof name==='string'&&/^reddford\s+bedfordview$/i.test(name.trim())?'Reddam Bedfordview':name;}
+function school(d){return canonicalSchool(d.Metadata[0].school);}
+function key(d){return [school(d)==='Reddam Bedfordview'?'Reddford Bedfordview':school(d),d.Metadata[0].planningPeriod,d.Metadata[0].meetingPeriod].map(x=>x.trim().toLowerCase().replace(/\s+/g,' ')).join('|');}
 const legacyKeys=['school','otherSchool','meetingDate','planningPeriod','region','currency','reportingDate','preparedBy','duration','summary','implication1','implication2','implication3','decisionsSought','riskSummary','regionalA','financialDefinitions'];
 function migrate(d){
  if(!d||!['inspired-board-v1','inspired-board-v2',S.version].includes(d.schema))return d;
+ if(d.schema!=='inspired-board-v1'&&Array.isArray(d.Metadata)&&d.Metadata.length===1&&d.Metadata[0])d={...d,Metadata:[{...d.Metadata[0],school:canonicalSchool(d.Metadata[0].school)}]};
  if(['inspired-board-v1','inspired-board-v2'].includes(d.schema)&&Array.isArray(d.Commitments)){const {Commitments,...rest}=d;d={...rest,legacyCommitments:Commitments.map(r=>({...r}))};}
  for(const t of ['Opportunities','Evidence'])if(['inspired-board-v1','inspired-board-v2'].includes(d.schema)&&Array.isArray(d[t])){const next={...d,['legacy'+t]:d[t].map(r=>({...r}))};delete next[t];d=next;}
  if(Array.isArray(d.Priorities)&&d.Priorities.some(p=>Object.hasOwn(p,'destination'))){d={...d,legacyPriorityDestinations:d.Priorities.map((p,i)=>({record:String(i+1),destination:p.destination||''})),Priorities:d.Priorities.map(p=>{const {destination,...rest}=p;return rest;})};}
@@ -19,7 +21,7 @@ function migrate(d){
  const m=d.Metadata[0];
  if(!m||Object.keys(m).some(k=>!legacyKeys.includes(k))||legacyKeys.some(k=>typeof m[k]!=='string'||m[k].length>30000))throw Error('Invalid legacy metadata.');
  const normalize=v=>v.trim().toLowerCase().replace(/\bhouse\b/g,'').replace(/\s+/g,' ');
- const name=m.school==='Other'?m.otherSchool:m.school;
+ const name=canonicalSchool(m.school==='Other'?m.otherSchool:m.school);
  const mapped=S.schools.find(s=>normalize(s)===normalize(name))||'';
  const next={...d,schema:S.version,legacyMetadata:{...m},PromptAnswers:S.prompts.map(p=>({...p,answer:''})),Metadata:[{school:mapped,meetingPeriod:'2026 Term 4',planningPeriod:m.planningPeriod,region:m.region,currency:m.currency,submittedDate:m.reportingDate,preparedBy:m.preparedBy}]};
  return next;
