@@ -4,7 +4,7 @@ let data=C.fresh(),page='setup',batch=[],timer,autosave=true;
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sectionTitle=id=>S.sections.find(s=>s.id===id)?.title||id;
 const names={Priorities:'Forward priorities'};
-const navItems=[['setup','School details'],...S.sections.map(s=>[s.id,s.title]),['Priorities','Forward priorities'],['review','Review & export'],['consolidate','Consolidation']];
+const navItems=[['setup','School details'],...S.sections.map(s=>[s.id,s.title]),['Priorities','Forward priorities'],['review','Review & export']];
 function toast(s){$('toast').textContent=s;clearTimeout(timer);timer=setTimeout(()=>$('toast').textContent='',7000);}
 function save(){if(!autosave)return;try{localStorage.setItem(STORE,JSON.stringify(data));$('save-status').textContent='Saved on this browser · '+new Date().toLocaleTimeString();}catch(e){$('save-status').textContent='Local save unavailable — download a draft backup now.';}}
 function touch(){data.updatedAt=new Date().toISOString();save();renderNav();}
