@@ -53,7 +53,7 @@ function validate(d){
 function gaps(d){const out=[],m=d.Metadata[0],add=(message,page,field)=>out.push({message,page,field});
  for(const [k,l]of [['school','school'],['planningPeriod','planning period'],['meetingPeriod','board meeting'],['submittedDate','report submitted date'],['currency','currency']])if(!m[k].trim())add('Complete '+l+'.','setup','Metadata-0-'+k);
  for(const [i,s]of d.Sections.entries()){const label='Section '+s.sectionId,rating=s.schoolRating,need=(key,message)=>{if(!s[key].trim())add(label+': '+message,s.sectionId,'Sections-'+i+'-'+key);};
- if(rating!=='N/A')for(const [j,p]of d.PromptAnswers.entries())if(p.sectionId===s.sectionId&&!p.answer.trim())add(label+' · '+p.promptId+': add a brief answer (or explain what evidence is needed).',s.sectionId,'PromptAnswers-'+j+'-answer');
+ if(rating!=='N/A')for(const [j,p]of d.PromptAnswers.entries())if(p.sectionId===s.sectionId&&!p.answer.trim())add(label+' · Question '+(S.prompts.filter(q=>q.sectionId===s.sectionId).findIndex(q=>q.promptId===p.promptId)+1)+': add a brief answer (or explain what evidence is needed).',s.sectionId,'PromptAnswers-'+j+'-answer');
  if(['Amber','Red'].includes(rating)){need('reason','describe the key issue and supporting evidence.');need('nextAction','record the corrective action or decision.');need('owner','name the accountable owner.');need('dueDate','set the action due date.');}
  if(rating==='N/A')need('reason','explain why this function is not applicable.');
  if(rating==='Not assessed'){need('reason','explain the evidence needed.');need('dueDate','set a date to supply missing evidence.');add(label+': assess the school rating when evidence is available.',s.sectionId,'Sections-'+i+'-schoolRating');}
