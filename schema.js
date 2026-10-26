@@ -1,7 +1,7 @@
 /* Agenda wording transcribed from School Board Meeting Agenda – Draft 10/9. */
 (function(root){
 const sections=[
-['1','Starting position and prior commitments by exception','Head and Finance lead',[
+['1','School Overview','Head and Finance lead',[
 'Which three facts most affect the school’s next-year plan: academic performance, enrolment, retention, staffing, financial position or capacity?',
 'Which previously agreed priorities need a changed approach, escalation or closure? What is the evidence and what will be done differently?'],
 'A concise starting-point assessment and disposition of outstanding commitments. If no priorities were previously agreed, use a baseline assessment, not an invented close-out.'],
